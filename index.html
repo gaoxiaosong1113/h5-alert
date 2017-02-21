@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=0.5,maximum-scale=0.5,wxc-user-scalable=no,initial-scale=0.5"/>
+    <link rel="stylesheet" href="http://www.gxspp.com/web/h5-alert/css/style.css">
+    <script src="//cdn.bootcss.com/jquery/2.0.0/jquery.js"></script>
+</head>
+<body>
+
+<div class="gxs-vh">
+    <div class="gxs-body scrollable">
+        <div class="scrollable-box">
+            <button type="button" class="gxs-btn dialog-btn" data-toggle="modal">弹出层</button>
+            <br>
+            <button type="button" class="gxs-btn dialog-btn2" data-toggle="modal">自定义内容弹出层</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="gxs-dialog-warp gxs-dialog-warp-l">
+    <div class="gxs-dialog">
+        <div class="gxs-dialog-hd">
+            <h4 class="gxs-dialog-title">弹窗标题</h4>
+        </div>
+        <div class="gxs-dialog-bd">
+            <p>弹窗内容</p>
+        </div>
+        <div class="gxs-dialog-ft">
+            <button class="gxs-dialog-btn default" data-toggle="modal">取消</button>
+            <button class="gxs-dialog-btn primary">确定</button>
+        </div>
+    </div>
+    <div class="gxs-dialog-mask"></div>
+</div>
+
+
+<script type="text/javascript">
+
+
+    // 弹出层对话框
+    (function ($) {
+        'use strict';
+        var dialog = function (options) {
+            // 判断dialog实例是否存在，不存在的话重新new一个实例
+            if (!(this instanceof dialog)) return new dialog(options);
+            var _this = this;
+            //默认元素
+            var dialogOptions = {
+                dialogBtn: '.dialog-btn',
+                dialogWarp: '.gxs-dialog-warp',
+                dialog: '.gxs-dialog',
+                dialogMask: '.gxs-dialog-mask',
+                dialogBtnDefault: '.gxs-dialog-btn.default',
+                dialogBtnPrimary: '.gxs-dialog-btn.primary',
+                time: '3s',
+                dialogText: '这个是内容',
+                dialogTitle: '这个是标题',
+                default: function () {
+                    // 取消回调
+                },
+                primary: function () {
+                    //确定回调
+                }
+            };
+            //合并传进来的元素
+            $.extend(dialogOptions, options);
+
+            this.prototype = {
+                //显示方法
+                dialogShow: function () {
+                    $(dialogOptions.dialogWarp).fadeIn(200);
+                    $(".gxs-vh").addClass("filter");
+                },
+                //移除方法
+                dialogRemove: function () {
+                    $(dialogOptions.dialogWarp).remove();
+                },
+                //隐藏方法
+                dialogHide: function () {
+                    $(dialogOptions.dialogWarp).fadeOut(200, function () {
+                        $(".gxs-vh").removeClass("filter");
+                        if (dialogOptions.append === true) {
+                            _this.prototype.dialogRemove();
+                        }
+                    });
+                }
+            };
+            //此处如果 dialogOptions.append为true的话，会重新拼接一个弹出框
+            if (dialogOptions.append === true) {
+                var date = new Date();
+                dialogOptions.dialogWarp = '.gxs-dialog-warp-' + date.getTime();
+                //此处为拼接的弹出框增加一个唯一的calss，以供区分
+                var str = dialogOptions.dialogWarp.substring(1);
+                var dialogWarp = $('<div></div>', {
+                    class: "gxs-dialog-warp"
+                }).appendTo('body').addClass(str);
+                var dialogBox = $('<div></div>', {
+                    class: "gxs-dialog"
+                }).appendTo(dialogWarp);
+                var dialogMask = $('<div></div>', {
+                    class: "gxs-dialog-mask"
+                }).appendTo(dialogWarp);
+                var dialogHd = $('<div></div>', {
+                    class: "gxs-dialog-hd",
+                    html: '<h4 class="gxs-dialog-title">' + dialogOptions.dialogTitle + '</h4>'
+                }).appendTo(dialogBox);
+                var dialogBd = $('<div></div>', {
+                    class: "gxs-dialog-bd",
+                    html: '<p>' + dialogOptions.dialogText + '</p>'
+                }).appendTo(dialogBox);
+                var dialogFt = $('<div></div>', {
+                    class: "gxs-dialog-ft"
+                }).appendTo(dialogBox);
+                var dialogBtnDefault = $('<button></button>', {
+                    class: 'gxs-dialog-btn default',
+                    text: '取消'
+                }).appendTo(dialogFt);
+                var dialogBtnPrimary = $('<button></button>', {
+                    class: 'gxs-dialog-btn primary',
+                    text: "确定"
+                }).appendTo(dialogFt);
+                dialogOptions.dialogWarp = "." + str;
+            }
+
+            //执行到这里，说明已经触发了点击事件，默认显示弹出框
+            _this.prototype.dialogShow();
+
+            //点击背景
+            $(dialogOptions.dialogMask).click(function (event) {
+                _this.prototype.dialogHide();
+            });
+
+            //点击确定
+            $(dialogOptions.dialogBtnPrimary).off("click").click(function () {
+                _this.prototype.dialogHide();
+                dialogOptions.primary();
+            });
+
+            //点击取消
+            $(dialogOptions.dialogBtnDefault).off("click").click(function () {
+                _this.prototype.dialogHide();
+                dialogOptions.default();
+            });
+        };
+        window.dialog = dialog; //暴露给外部,以供调用
+    })($);
+
+    //显示默认的弹出框
+    $('.dialog-btn').click(function () {
+        var dialogAlert = new dialog({
+            dialogBtn: this,
+            default: function () {
+                console.log("取消按钮1")
+            },
+            primary: function () {
+                console.log("确定按钮1")
+            }
+        })
+    });
+
+
+    //生成弹出框
+    $('.dialog-btn2').click(function () {
+        var dialogAlert2 = new dialog({
+            append: true,
+            dialogBtn: this,
+            dialogText: '提示信息2',
+            dialogTitle: '提示标题2',
+            default: function () {
+                console.log("取消按钮2")
+            },
+            primary: function () {
+                console.log("确定按钮2")
+            }
+        })
+    });
+</script>
+</body>
+
+</html>
